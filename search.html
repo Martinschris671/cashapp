@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Search - Cash App</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <style>
+      /* --- Global Styles & Variables --- */
+      :root {
+        --app-bg-color: #ffffff;
+        --content-bg-color: #f7f7f7;
+        --text-primary: #000000;
+        --text-secondary: #6c757d;
+        --text-placeholder: #b0b0b0;
+        --search-bg: #e9ecef; /* Background for search input */
+        --border-color: #e9ecef;
+        --icon-bg-default: #e9ecef;
+        --padding-screen: 18px;
+        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        --footer-height: 65px;
+        --header-height: 60px; /* Height for the simple header */
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: var(--font-family);
+        background-color: #c0c0c0; /* Fallback */
+        color: var(--text-primary);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .app-container {
+        max-width: 450px;
+        width: 100%;
+        height: 100vh;
+        max-height: 900px;
+        background-color: var(--app-bg-color);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* --- Search Header --- */
+      .search-header {
+        display: flex;
+        justify-content: center;
+        align-items: center; /* Center title */
+        padding: 0 var(--padding-screen);
+        height: var(--header-height);
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--app-bg-color);
+        flex-shrink: 0;
+        z-index: 100;
+      }
+      .search-header h1 {
+        font-size: 18px; /* Standard header title size */
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      /* --- Main Content Area --- */
+      .main-content {
+        flex-grow: 1;
+        overflow-y: hidden; /* Prevent scrolling on main, handled by suggestions */
+        background-color: var(--app-bg-color);
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- Search Bar --- */
+      .search-bar-container {
+        padding: 15px var(--padding-screen);
+        background-color: var(--app-bg-color);
+        flex-shrink: 0;
+        position: relative; /* For icon */
+      }
+      .search-bar-container .search-icon {
+        position: absolute;
+        left: calc(var(--padding-screen) + 12px);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 16px;
+        pointer-events: none; /* Don't block input click */
+      }
+
+      #search-input {
+        width: 100%;
+        padding: 12px 15px 12px 40px; /* Left padding for icon */
+        font-size: 16px;
+        border: none;
+        border-radius: 10px;
+        background-color: var(--search-bg);
+        color: var(--text-primary);
+        outline: none;
+        -webkit-appearance: none; /* Remove iOS appearance */
+      }
+      #search-input::placeholder {
+        color: var(--text-placeholder);
+      }
+
+      /* --- Suggestions --- */
+      .suggestions-section {
+        /* No top padding needed, search bar provides space */
+        padding: 0;
+        flex-grow: 1; /* Allow suggestions to take available space */
+        overflow-y: auto; /* Scroll ONLY suggestions if needed */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        border-top: 1px solid var(--border-color); /* Separator */
+      }
+      .suggestions-section::-webkit-scrollbar {
+        display: none;
+      }
+
+      .suggestions-header {
+        font-size: 12px;
+        font-weight: 500;
+        color: #8e8e93;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 15px var(--padding-screen) 10px var(--padding-screen);
+        /* Make header sticky within the suggestions section */
+        position: sticky;
+        top: 0;
+        background-color: var(--app-bg-color);
+        z-index: 10;
+        /* border-bottom: 1px solid var(--border-color); No border needed here */
+      }
+      .suggestions-list ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .suggestion-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px var(--padding-screen);
+        cursor: pointer;
+        transition: background-color 0.1s ease;
+        position: relative;
+        border-bottom: 1px solid var(--border-color); /* Border between items */
+      }
+      .suggestion-item:last-child {
+        border-bottom: none;
+      }
+      .suggestion-item:hover {
+        background-color: #f8f9fa;
+      }
+      /* No .selected style needed here as we navigate away */
+
+      /* Checkmark elements removed */
+
+      .suggestion-avatar img,
+      .suggestion-avatar div {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        background-color: var(--icon-bg-default);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        font-size: 16px;
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        flex-shrink: 0;
+      }
+      .suggestion-details {
+        flex-grow: 1;
+        overflow: hidden;
+      }
+      .suggestion-name {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
+      }
+      .suggestion-cashtag {
+        font-size: 14px;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      /* Action icon (user icon) removed as it's redundant here */
+
+      /* --- Footer Navigation --- */
+      .app-footer {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background-color: var(--app-bg-color);
+        border-top: 1px solid var(--border-color);
+        height: var(--footer-height);
+        padding: 0 var(--padding-screen);
+        z-index: 200;
+        flex-shrink: 0;
+      }
+      .nav-item {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        color: var(--text-secondary);
+        transition: color 0.2s ease, transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .nav-item.active {
+        color: var(--text-primary);
+        transform: scale(1.05);
+      }
+      .nav-item:hover:not(.active) {
+        color: #333;
+        transform: scale(1.1);
+      }
+      .nav-item svg {
+        width: 26px;
+        height: 26px;
+        fill: currentColor;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="search-header">
+        <h1>Search</h1>
+        <!-- Profile picture removed for simplicity on search page -->
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <div class="search-bar-container">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Name, $Cashtag, Phone, Email"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+        </div>
+
+        <!-- Suggestions Section (Scrollable) -->
+        <div class="suggestions-section">
+          <div class="suggestions-header">Suggested</div>
+          <div class="suggestions-list">
+            <ul id="suggestions-list-ul">
+              <!-- Suggestions loaded by JS -->
+            </ul>
+          </div>
+        </div>
+      </main>
+      <!-- End main-content -->
+
+      <!-- Footer Navigation -->
+      <footer class="app-footer">
+        <button class="nav-item" aria-label="Home" onclick="navigateTo('home')">
+          <svg viewBox="0 0 24 24">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+          </svg>
+        </button>
+        <button class="nav-item" aria-label="Card" onclick="navigateTo('card')">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zm0-12H4V6h16v2z"
+            />
+          </svg>
+        </button>
+        <button
+          class="nav-item"
+          aria-label="Payment"
+          onclick="navigateTo('pay')"
+        >
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.75-2.7 1.75-1.78 0-2.95-.84-3.17-2.1H6.11c.17 2.28 1.95 3.47 4.39 3.82V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"
+            />
+          </svg>
+        </button>
+        <button
+          class="nav-item active"
+          aria-label="Search"
+          onclick="navigateTo('search')"
+        >
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+            />
+          </svg>
+        </button>
+        <a href="history.html">
+          <button class="nav-item" aria-label="Activity">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"
+              />
+            </svg>
+          </button>
+        </a>
+      </footer>
+    </div>
+    <!-- End app-container -->
+
+    <script>
+      // --- DOM Elements ---
+      const searchInput = document.getElementById("search-input");
+      const suggestionsListUl = document.getElementById("suggestions-list-ul");
+      const navItems = document.querySelectorAll(".app-footer .nav-item"); // For navigation state
+
+      // --- State & Constants ---
+      // Sample Contacts remain the same as the expanded list from previous step
+      const sampleContacts = [
+        {
+          id: 1,
+          name: "Jay Z",
+          cashtag: "$sc",
+          avatar: "gallery/sergio-de-paula-c_GmwfHBDzk-unsplash.jpg",
+        },
+        {
+          id: 2,
+          name: "Diego",
+          cashtag: "$dm",
+          avatar: null,
+          initial: "D",
+          color: "#A020F0",
+        },
+        {
+          id: 3,
+          name: "Sandy G.",
+          cashtag: "$sandy",
+          avatar: null,
+          initial: "S",
+          color: "#FF7F50",
+        },
+        {
+          id: 4,
+          name: "Alice Green",
+          cashtag: "$aliceg",
+          avatar: "gallery/stefan-stefancik-QXevDflbl8A-unsplash.jpg",
+        },
+        {
+          id: 5,
+          name: "Bob White",
+          cashtag: "$bwhite",
+          avatar: null,
+          initial: "B",
+          color: "#8CD7FF",
+        },
+        {
+          id: 6,
+          name: "Charlie Brown",
+          cashtag: "$charlie",
+          avatar: "gallery/craig-mckay-jmURdhtm7Ng-unsplash.jpg",
+        },
+        {
+          id: 7,
+          name: "David Lee",
+          cashtag: "$dlee",
+          avatar: null,
+          initial: "D",
+          color: "#4682B4",
+        },
+        {
+          id: 8,
+          name: "Emily Clark",
+          cashtag: "$emilyc",
+          avatar: "gallery/images-11.jpeg",
+        },
+        {
+          id: 9,
+          name: "Frank Wright",
+          cashtag: "$frankw",
+          avatar: "gallery/images-9.jpeg",
+        },
+        {
+          id: 10,
+          name: "Grace Hall",
+          cashtag: "$graceh",
+          avatar: null,
+          initial: "G",
+          color: "#FF69B4",
+        },
+        {
+          id: 11,
+          name: "Henry Adams",
+          cashtag: "$henrya",
+          avatar: "gallery/vicky-hladynets-C8Ta0gwPbQg-unsplash.jpg",
+        },
+        {
+          id: 12,
+          name: "Isabel King",
+          cashtag: "$isabelk",
+          avatar: null,
+          initial: "I",
+          color: "#FF1493",
+        },
+        {
+          id: 13,
+          name: "Jack Lewis",
+          cashtag: "$jackl",
+          avatar: "gallery/mubariz-mehdizadeh-t3zrEm88ehc-unsplash.jpg",
+        },
+        {
+          id: 14,
+          name: "Kate Nelson",
+          cashtag: "$katen",
+          avatar: null,
+          initial: "K",
+          color: "#FF4500",
+        },
+        {
+          id: 15,
+          name: "Liam Perez",
+          cashtag: "$liamp",
+          avatar: "gallery/jonas-kakaroto-mjRwhvqEC0U-unsplash.jpg",
+        },
+        {
+          id: 16,
+          name: "Mia Roberts",
+          cashtag: "$miar",
+          avatar: null,
+          initial: "M",
+          color: "#DA70D6",
+        },
+        {
+          id: 17,
+          name: "Noah Scott",
+          cashtag: "$noahs",
+          avatar: "gallery/images-8.jpeg",
+        },
+        {
+          id: 18,
+          name: "Olivia Turner",
+          cashtag: "$oliviat",
+          avatar: null,
+          initial: "O",
+          color: "#48D1CC",
+        },
+        {
+          id: 19,
+          name: "Peter Walker",
+          cashtag: "$pete",
+          avatar:
+            "asset/294357844_1020031515364334_1985599282592918068_n-1.jpg",
+        },
+        {
+          id: 20,
+          name: "Quinn Young",
+          cashtag: "$quinn",
+          avatar: null,
+          initial: "Q",
+          color: "#D2691E",
+        },
+      ];
+
+      // --- Functions ---
+
+      // Render Suggestions List (Modified: No checkmark)
+      function renderSuggestions(contactsToShow = sampleContacts) {
+        suggestionsListUl.innerHTML = "";
+        contactsToShow.forEach((contact) => {
+          const li = document.createElement("li");
+          li.className = "suggestion-item";
+          li.dataset.contactId = contact.id; // Still useful for identification
+
+          const avatarHtml = contact.avatar
+            ? `<img src="${contact.avatar}" alt="${contact.name}">`
+            : `<div style="background-color: ${
+                contact.color || "#e0e0e0"
+              }; color: white;">${
+                contact.initial || contact.name.charAt(0)
+              }</div>`;
+
+          li.innerHTML = `
+                    <span class="suggestion-avatar">${avatarHtml}</span>
+                    <div class="suggestion-details">
+                        <span class="suggestion-name">${contact.name}</span>
+                        <span class="suggestion-cashtag">${contact.cashtag}</span>
+                    </div>
+                    <!-- Removed checkmark and action icon -->
+                `;
+          li.addEventListener("click", () => handleContactSelect(contact));
+          suggestionsListUl.appendChild(li);
+        });
+      }
+
+      // Filter suggestions based on search input
+      function filterSuggestions() {
+        const query = searchInput.value.toLowerCase().trim();
+        if (!query) {
+          renderSuggestions(sampleContacts); // Show all if query is empty
+        } else {
+          const filtered = sampleContacts.filter(
+            (contact) =>
+              contact.name.toLowerCase().includes(query) ||
+              contact.cashtag.toLowerCase().includes(query)
+          );
+          renderSuggestions(filtered); // Render filtered list
+        }
+      }
+
+      // Handle Contact Selection -> Navigate
+      function handleContactSelect(contact) {
+        console.log("Selected contact:", contact.name, contact.cashtag);
+        // **TODO (Future):** Store selected contact details in localStorage
+        // localStorage.setItem('selectedRecipientName', contact.name);
+        // localStorage.setItem('selectedRecipientCashtag', contact.cashtag);
+        // localStorage.setItem('selectedRecipientAvatar', contact.avatar || ''); // etc.
+
+        // Navigate to the payment page
+        window.location.href = "pay.html";
+      }
+
+      // Simple Navigation Placeholder (Update active state if needed)
+      function navigateTo(page) {
+        const targetPage = page === "home" ? "home.html" : `${page}.html`;
+        if (page === "search") {
+          // Already on search page, do nothing or refresh?
+          // window.location.reload();
+        } else {
+          window.location.href = targetPage;
+        }
+      }
+
+      // --- Load Initial State ---
+      function loadInitialState() {
+        renderSuggestions(); // Render initial suggestions
+
+        // Set Active Footer Item
+        navItems.forEach((item) => {
+          const label = item.getAttribute("aria-label");
+          if (label === "Search") {
+            // Highlight Search icon
+            item.classList.add("active");
+          } else {
+            item.classList.remove("active");
+          }
+        });
+      }
+
+      // --- Event Listeners ---
+      searchInput.addEventListener("input", filterSuggestions);
+
+      // Footer Navigation (uses onclick in HTML for simplicity here)
+
+      // --- Initial Load ---
+      document.addEventListener("DOMContentLoaded", loadInitialState);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Activity - Cash App</title>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <style>
+      /* --- Global Styles & Variables --- */
+      :root {
+        /* Light theme for Activity page */
+        --app-bg-color: #ffffff;
+        --content-bg-color: #f7f7f7; /* Very light grey for list bg */
+        --text-primary: #000000;
+        --text-secondary: #6c757d; /* Gray for secondary text */
+        --text-positive: #00d54b; /* Cash App Green */
+        --border-color: #e9ecef; /* Light border */
+        --filter-bg-active: #e9ecef;
+        --filter-text-active: #000000;
+        --filter-bg-inactive: transparent;
+        --filter-text-inactive: #6c757d;
+        --icon-bg-default: #e9ecef; /* Default icon background */
+        --placeholder-profile-bg: #888b90;
+        --border-radius-button: 20px;
+        --border-radius-icon: 50%;
+        --padding-screen: 18px;
+        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        --footer-height: 65px;
+        --header-height: 70px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: var(--font-family);
+        background-color: #e0e0e0; /* Fallback bg */
+        color: var(--text-primary);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* Align container top */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .app-container {
+        max-width: 450px;
+        width: 100%;
+        height: 100vh;
+        max-height: 900px;
+        background-color: var(
+          --app-bg-color
+        ); /* White background for activity */
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* --- Activity Header --- */
+      .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: calc(var(--padding-screen) * 0.8) var(--padding-screen);
+        height: var(--header-height);
+        position: relative;
+        z-index: 100;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .activity-header h1 {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .profile-picture {
+        /* Reusing style */
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        cursor: pointer;
+        background-color: var(--placeholder-profile-bg);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        display: block;
+      }
+      #profile-pic-input {
+        display: none;
+      }
+
+      /* --- Profile Picture Dropdown Menu (Reuse style) --- */
+      .profile-options-menu {
+        display: none;
+        position: absolute;
+        top: calc(var(--header-height) - 10px);
+        right: var(--padding-screen);
+        background-color: #ffffff;
+        color: #000000;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        padding: 8px 0;
+        z-index: 1100;
+        min-width: 150px;
+        border: 1px solid #eee;
+      }
+      .profile-options-menu.show {
+        display: block;
+      }
+      .profile-options-menu button {
+        display: block;
+        width: 100%;
+        padding: 10px 15px;
+        background: none;
+        border: none;
+        text-align: left;
+        font-family: inherit;
+        font-size: 14px;
+        color: #000000;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+      .profile-options-menu button:hover {
+        background-color: #f5f5f5;
+      }
+
+      /* --- Filter Tabs --- */
+      .filters {
+        display: flex;
+        gap: 10px;
+        padding: 12px var(--padding-screen);
+        background-color: var(--app-bg-color);
+        flex-shrink: 0;
+        overflow-x: auto; /* Allow horizontal scroll if filters don't fit */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+      }
+      .filters::-webkit-scrollbar {
+        display: none;
+      } /* Chrome/Safari */
+
+      .filters button {
+        background: var(--filter-bg-inactive);
+        color: var(--filter-text-inactive);
+        border: none;
+        padding: 8px 15px;
+        border-radius: var(--border-radius-button);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+        white-space: nowrap; /* Prevent wrapping */
+      }
+      .filters button.active {
+        background-color: var(--filter-bg-active);
+        color: var(--filter-text-active);
+      }
+      .filters button:hover:not(.active) {
+        background-color: #f0f0f0;
+      }
+
+      /* --- Transaction List (Scrollable Area) --- */
+      .transaction-list {
+        flex-grow: 1; /* Takes remaining space */
+        overflow-y: auto; /* Enable vertical scrolling */
+        background-color: var(--content-bg-color);
+        padding: 0; /* Remove padding from main */
+        /* Padding at bottom to clear footer */
+        padding-bottom: calc(var(--footer-height) + 10px);
+      }
+
+      .transaction-list ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        background-color: var(
+          --app-bg-color
+        ); /* White background for list items */
+      }
+
+      .transaction-item {
+        display: flex;
+        align-items: center;
+        padding: 15px var(--padding-screen);
+        border-bottom: 1px solid var(--border-color);
+        gap: 15px; /* Space between elements */
+      }
+      .transaction-item:last-child {
+        border-bottom: none;
+      }
+
+      .transaction-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: var(--border-radius-icon);
+        background-color: var(--icon-bg-default);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 18px;
+        color: var(--text-primary); /* Default icon color */
+      }
+      /* Specific icon colors */
+      .transaction-icon.payment {
+        color: #ffffff;
+      }
+      .transaction-icon.deposit {
+        color: var(--text-positive);
+        background-color: #e0f8e9;
+      }
+      .transaction-icon.bitcoin {
+        color: #ff9900;
+        background-color: #fff0e0;
+      }
+      .transaction-icon.stock {
+        color: #8a2be2;
+        background-color: #f3e5ff;
+      }
+      .transaction-icon.request {
+        color: var(--text-secondary);
+      }
+
+      .transaction-details {
+        flex-grow: 1; /* Takes available space */
+        display: flex;
+        flex-direction: column;
+        gap: 3px; /* Small gap between name and meta */
+        overflow: hidden; /* Prevent long text overflow */
+      }
+      .transaction-name {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .transaction-meta {
+        font-size: 13px;
+        color: var(--text-secondary);
+        white-space: nowrap;
+      }
+      .transaction-meta .status-pending {
+        color: #ff9900;
+      } /* Orange for pending */
+
+      .transaction-amount {
+        text-align: right;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .transaction-amount .amount {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text-primary); /* Default (negative/sent) */
+      }
+      .transaction-amount .amount.positive {
+        color: var(--text-positive); /* Green for positive */
+      }
+      .transaction-amount .indicator {
+        /* Optional +/- sign */
+        font-size: 12px;
+        margin-right: 2px;
+      }
+
+      /* --- Footer Navigation (Reuse styles) --- */
+      .app-footer {
+        /* position: sticky; bottom: 0; left: 0; right: 0; No longer sticky */
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background-color: var(--app-bg-color); /* Match activity bg */
+        border-top: 1px solid var(--border-color);
+        height: var(--footer-height);
+        padding: 0 var(--padding-screen);
+        z-index: 200;
+        flex-shrink: 0;
+      }
+      .nav-item {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        color: var(--text-secondary); /* Inactive color on light bg */
+        transition: color 0.2s ease, transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem; /* 8px for hover */
+      }
+      .nav-item.active {
+        color: var(--text-primary); /* Active color on light bg */
+        transform: scale(1.05);
+      }
+      .nav-item:hover:not(.active) {
+        color: #333;
+        background-color: #42434454;
+      }
+      .nav-item svg {
+        width: 26px;
+        height: 26px;
+        fill: currentColor;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="activity-header">
+        <h1>Activity</h1>
+        <!-- Profile picture elements reused -->
+        <img alt="Profile" class="profile-picture" id="profile-pic-display" />
+        <input type="file" id="profile-pic-input" accept="image/*" />
+        <div id="profile-options" class="profile-options-menu">
+          <button id="change-pic-btn">Change Picture</button>
+          <button id="remove-pic-btn">Remove Picture</button>
+        </div>
+      </header>
+
+      <section class="filters">
+        <button class="active">All</button>
+        <button>Day</button>
+        <button>Week</button>
+        <button>Month</button>
+        <button>Year</button>
+        <!-- Add more filters if needed -->
+      </section>
+
+      <!-- Scrollable Transaction List -->
+      <main class="transaction-list">
+        <ul id="transaction-list-ul">
+          <!-- Transactions will be added here by JavaScript -->
+        </ul>
+      </main>
+
+      <footer class="app-footer">
+        <!-- Ensure Activity icon is active -->
+        <a href="home.html">
+          <button class="nav-item" aria-label="Home">
+            <svg viewBox="0 0 24 24">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg></button
+        ></a>
+        <a href="card.html">
+          <button class="nav-item" aria-label="Card">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zm0-12H4V6h16v2z"
+              />
+            </svg>
+          </button>
+        </a>
+        <a href="pay.html">
+          <button class="nav-item" aria-label="Payment">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.75-2.7 1.75-1.78 0-2.95-.84-3.17-2.1H6.11c.17 2.28 1.95 3.47 4.39 3.82V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"
+              />
+            </svg></button
+        ></a>
+        <a href="search.html">
+          <button class="nav-item" aria-label="Search">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+              />
+            </svg>
+          </button>
+        </a>
+        <button class="nav-item active" aria-label="Activity">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"
+            />
+          </svg>
+        </button>
+      </footer>
+    </div>
+    <!-- End app-container -->
+
+    <script>
+      // --- DOM Elements ---
+      const transactionListUl = document.getElementById("transaction-list-ul");
+      const filterButtons = document.querySelectorAll(".filters button");
+      // Profile elements
+      const profilePicDisplay = document.getElementById("profile-pic-display");
+      const profilePicInput = document.getElementById("profile-pic-input");
+      const profileOptions = document.getElementById("profile-options");
+      const changePicBtn = document.getElementById("change-pic-btn");
+      const removePicBtn = document.getElementById("remove-pic-btn");
+      const navItems = document.querySelectorAll(".app-footer .nav-item");
+
+      // --- State & Constants ---
+      const localStorageProfilePicKey = "cashAppProfilePic";
+      const placeholderProfilePicSrc = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23888b90"/></svg>`;
+
+      // --- Sample Transaction Data ---
+      const sampleTransactions = [
+        {
+          type: "payment",
+          name: "John Doe",
+          time: "2h ago",
+          amount: -25.0,
+          status: "Completed",
+          iconClass: "fa-solid fa-user",
+          iconBgColor: "#6a84fc",
+        },
+        {
+          type: "deposit",
+          name: "Bank Deposit",
+          time: "8h ago",
+          amount: 500.0,
+          status: "Completed",
+          iconClass: "fa-solid fa-building-columns",
+          iconBgColor: "#e0f8e9",
+          iconColor: "#00D54B",
+        },
+        {
+          type: "payment",
+          name: "Starbucks",
+          time: "Yesterday",
+          amount: -5.75,
+          status: "Completed",
+          iconClass: "fa-solid fa-mug-saucer",
+          iconBgColor: "#006241",
+          iconColor: "#ffffff",
+        },
+        {
+          type: "request",
+          name: "Request from Jane Smith",
+          time: "Yesterday",
+          amount: 15.0,
+          status: "Pending",
+          iconClass: "fa-solid fa-hand-holding-dollar",
+          iconBgColor: "#f0f0f0",
+          iconColor: "#6c757d",
+        },
+        {
+          type: "bitcoin",
+          name: "Bitcoin Buy",
+          time: "2d ago",
+          amount: -100.0,
+          status: "Completed",
+          iconClass: "fa-brands fa-bitcoin",
+          iconBgColor: "#fff0e0",
+          iconColor: "#ff9900",
+        },
+        {
+          type: "payment",
+          name: "Alice Green",
+          time: "3d ago",
+          amount: -50.0,
+          status: "Completed",
+          iconClass: "fa-solid fa-user",
+          iconBgColor: "#ff8c9a",
+        },
+        {
+          type: "deposit",
+          name: "Cash App Add Cash",
+          time: "3d ago",
+          amount: 200.0,
+          status: "Completed",
+          iconClass: "fa-solid fa-dollar-sign",
+          iconBgColor: "#e0f8e9",
+          iconColor: "#00D54B",
+        },
+        {
+          type: "stock",
+          name: "Stock Sale (AAPL)",
+          time: "4d ago",
+          amount: 350.5,
+          status: "Completed",
+          iconClass: "fa-solid fa-arrow-trend-up",
+          iconBgColor: "#f3e5ff",
+          iconColor: "#8a2be2",
+        },
+        {
+          type: "payment",
+          name: "Netflix",
+          time: "5d ago",
+          amount: -15.99,
+          status: "Completed",
+          iconClass: "fa-solid fa-film",
+          iconBgColor: "#E50914",
+          iconColor: "#ffffff",
+        },
+        {
+          type: "payment",
+          name: "Bob White",
+          time: "5d ago",
+          amount: -30.0,
+          status: "Completed",
+          iconClass: "fa-solid fa-user",
+          iconBgColor: "#8cd7ff",
+        },
+        {
+          type: "deposit",
+          name: "Paycheck Deposit",
+          time: "6d ago",
+          amount: 1250.8,
+          status: "Completed",
+          iconClass: "fa-solid fa-building-columns",
+          iconBgColor: "#e0f8e9",
+          iconColor: "#00D54B",
+        },
+        {
+          type: "bitcoin",
+          name: "Bitcoin Sale",
+          time: "1w ago",
+          amount: 75.2,
+          status: "Completed",
+          iconClass: "fa-brands fa-bitcoin",
+          iconBgColor: "#fff0e0",
+          iconColor: "#ff9900",
+        },
+        {
+          type: "payment",
+          name: "Amazon",
+          time: "1w ago",
+          amount: -45.6,
+          status: "Completed",
+          iconClass: "fa-brands fa-amazon",
+          iconBgColor: "#FF9900",
+          iconColor: "#000000",
+        },
+        {
+          type: "request",
+          name: "Payment Request to Sam",
+          time: "1w ago",
+          amount: -10.0,
+          status: "Sent",
+          iconClass: "fa-solid fa-hand-holding-dollar",
+          iconBgColor: "#f0f0f0",
+          iconColor: "#6c757d",
+        },
+        {
+          type: "stock",
+          name: "Stock Buy (TSLA)",
+          time: "2w ago",
+          amount: -500.0,
+          status: "Completed",
+          iconClass: "fa-solid fa-arrow-trend-up",
+          iconBgColor: "#f3e5ff",
+          iconColor: "#8a2be2",
+        },
+        {
+          type: "payment",
+          name: "Grocery Store",
+          time: "2w ago",
+          amount: -88.15,
+          status: "Completed",
+          iconClass: "fa-solid fa-cart-shopping",
+          iconBgColor: "#a0a0a0",
+          iconColor: "#ffffff",
+        },
+        {
+          type: "deposit",
+          name: "Tax Refund",
+          time: "3w ago",
+          amount: 980.0,
+          status: "Completed",
+          iconClass: "fa-solid fa-landmark",
+          iconBgColor: "#e0f8e9",
+          iconColor: "#00D54B",
+        },
+        {
+          type: "payment",
+          name: "Utility Bill",
+          time: "3w ago",
+          amount: -112.4,
+          status: "Completed",
+          iconClass: "fa-solid fa-lightbulb",
+          iconBgColor: "#ffebcc",
+          iconColor: "#ffa500",
+        },
+        {
+          type: "payment",
+          name: "Charlie Brown",
+          time: "1mo ago",
+          amount: -22.0,
+          status: "Completed",
+          iconClass: "fa-solid fa-user",
+          iconBgColor: "#fcc47e",
+        },
+        {
+          type: "payment",
+          name: "Spotify",
+          time: "1mo ago",
+          amount: -10.99,
+          status: "Completed",
+          iconClass: "fa-brands fa-spotify",
+          iconBgColor: "#1DB954",
+          iconColor: "#ffffff",
+        },
+      ];
+
+      // --- Functions ---
+
+      // Render transaction list
+      function renderTransactions(transactions) {
+        transactionListUl.innerHTML = ""; // Clear existing list
+
+        transactions.forEach((tx) => {
+          const li = document.createElement("li");
+          li.className = "transaction-item";
+
+          const isPositive = tx.amount > 0;
+          const amountFormatted = `${isPositive ? "+" : ""}$${Math.abs(
+            tx.amount
+          ).toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`;
+
+          li.innerHTML = `
+                    <div class="transaction-icon ${
+                      tx.type
+                    }" style="background-color: ${
+            tx.iconBgColor || "var(--icon-bg-default)"
+          }; color: ${tx.iconColor || "inherit"};">
+                        <i class="${tx.iconClass || "fa-solid fa-receipt"}"></i>
+                    </div>
+                    <div class="transaction-details">
+                        <span class="transaction-name">${tx.name}</span>
+                        <span class="transaction-meta">
+                            ${
+                              tx.status === "Pending" || tx.status === "Sent"
+                                ? `<span class="status-${tx.status.toLowerCase()}">${
+                                    tx.status
+                                  }</span> • `
+                                : ""
+                            }
+                            ${tx.time}
+                        </span>
+                    </div>
+                    <div class="transaction-amount">
+                        <span class="amount ${
+                          isPositive ? "positive" : ""
+                        }">${amountFormatted}</span>
+                    </div>
+                `;
+          transactionListUl.appendChild(li);
+        });
+      }
+
+      // --- Profile Picture Logic (Reused) ---
+      function setPlaceholderProfilePic() {
+        profilePicDisplay.src = placeholderProfilePicSrc;
+        profilePicDisplay.style.backgroundColor = "";
+        profilePicDisplay.onerror = null;
+      }
+
+      function loadProfilePic() {
+        const savedProfilePic = localStorage.getItem(localStorageProfilePicKey);
+        if (savedProfilePic && savedProfilePic.startsWith("data:image/")) {
+          profilePicDisplay.src = savedProfilePic;
+          profilePicDisplay.style.backgroundColor = "";
+          profilePicDisplay.onerror = () => {
+            console.warn("Saved profile image failed to load. Resetting.");
+            localStorage.removeItem(localStorageProfilePicKey);
+            setPlaceholderProfilePic();
+          };
+        } else {
+          if (savedProfilePic) {
+            localStorage.removeItem(localStorageProfilePicKey);
+          }
+          setPlaceholderProfilePic();
+        }
+      }
+
+      function handleProfilePicClick(event) {
+        event.stopPropagation();
+        profileOptions.classList.toggle("show");
+      }
+
+      function handleProfilePicChange(event) {
+        const file = event.target.files[0];
+        if (!file || !file.type.startsWith("image/")) {
+          alert("Please select image.");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          profilePicDisplay.src = e.target.result;
+          profilePicDisplay.style.backgroundColor = "";
+          profilePicDisplay.onerror = () => {
+            console.warn("Uploaded image failed to load. Resetting.");
+            localStorage.removeItem(localStorageProfilePicKey);
+            setPlaceholderProfilePic();
+          };
+          localStorage.setItem(localStorageProfilePicKey, e.target.result);
+          console.log("Profile picture updated and saved.");
+        };
+        reader.readAsDataURL(file);
+        profileOptions.classList.remove("show");
+      }
+
+      // --- Event Listeners ---
+
+      // Filter Buttons (Placeholder action)
+      filterButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          filterButtons.forEach((btn) => btn.classList.remove("active"));
+          button.classList.add("active");
+          console.log(`Filter selected: ${button.textContent}`);
+          // Re-render list with filtered data (using same sample data for now)
+          renderTransactions(sampleTransactions);
+        });
+      });
+
+      // Profile Pic Listeners
+      profilePicDisplay.addEventListener("click", handleProfilePicClick);
+      profilePicInput.addEventListener("change", handleProfilePicChange);
+      changePicBtn.addEventListener("click", () => {
+        profilePicInput.click();
+        profileOptions.classList.remove("show");
+      });
+      removePicBtn.addEventListener("click", () => {
+        setPlaceholderProfilePic();
+        localStorage.removeItem(localStorageProfilePicKey);
+        console.log("Profile picture removed.");
+        profileOptions.classList.remove("show");
+      });
+
+      // Footer Navigation Click Handler (Placeholder)
+      navItems.forEach((item) => {
+        item.addEventListener("click", (e) => {
+          const label = item.getAttribute("aria-label");
+          navItems.forEach((i) => i.classList.remove("active"));
+          item.classList.add("active");
+        });
+      });
+
+      // Close dropdown if clicking outside
+      document.addEventListener("click", (event) => {
+        if (
+          profileOptions.classList.contains("show") &&
+          !profileOptions.contains(event.target) &&
+          !profilePicDisplay.contains(event.target)
+        ) {
+          profileOptions.classList.remove("show");
+        }
+      });
+
+      // --- Initial Load ---
+      document.addEventListener("DOMContentLoaded", () => {
+        loadProfilePic();
+        renderTransactions(sampleTransactions); // Render the initial list
+      });
+    </script>
+  </body>
+</html>
